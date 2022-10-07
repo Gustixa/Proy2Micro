@@ -10,15 +10,19 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstdlib>
 #include <semaphore.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <time.h>
+#include <cmath>
+#include <ctime>
 
 pthread_mutex_t mutexCar;
 pthread_cond_t condFillingGasStation;
-pthead_barrier_t barrierGasStations;
+pthread_barrier_t barrierGasStations;
 int amountGasToFill = 10000; // This value, represente the amount of gas, but in quetzales.
+int gasPerGasStation = 2000; // This value is in quetzales. Could be in global, but try to avoid the global variables.
 struct GasStation
 {
     int amountCars;
@@ -39,11 +43,11 @@ void *fillGas(void *argument);
  */
 int main(int argc, char *argv[])
 {
-    int amountGasStation;
+    int amountGasStation = 0;
     pthread_t numGasStation[amountGasStation];
-    pthead_mutex_init(&mutexCar);
+    pthread_mutex_init(&mutexCar, NULL);
     pthread_cond_init(&condFillingGasStation, NULL);
-    pthread_barrier_init(&barrierGasStations, 0, amountGasStation);
+    pthread_barrier_init(&barrierGasStations, NULL, amountGasStation);
     int i;
     for (i = 0; i < amountGasStation; i++)
     {
@@ -56,6 +60,7 @@ int main(int argc, char *argv[])
     {
         if (pthread_join(numGasStation[i], NULL) != 0)
         {
+            perror("Failed to join the current thread, to the main thread.");
         }
     }
     pthread_cond_destroy(&condFillingGasStation);
@@ -65,14 +70,38 @@ int main(int argc, char *argv[])
 
 void *gasStation(void *argument)
 {
-
-    int gasPerGasStation = 2000; // This value is in quetzales. Could be in global, but try to avoid the global variables.
+    srand(time(NULL));
+    int amountCars = rand() % 200;
+    pthread_t cars[amountCars];
+    int i = 0;
+    for (i = 0; i < amountCars; i++)
+    {
+        if (pthread_create(&cars[i], NULL, &gasPrice, NULL) != 0)
+        {
+            perror("Failed to create the thread");
+        }
+    }
+    for (i = 0; i < amountCars; i++)
+    {
+        if (pthread_join(cars[i], NULL) != 0) // Modified, if consideres to receive a paramter from the method.
+        {
+            perror("Failed to join the thread.");
+        }
+    }
+    retun 0;
 }
 
 void *gasPrice(void *argument)
 {
+    srand(time(NULL));
+    int valor = rand() % 600;
+    pthread_mutex_lock(&mutexCar);
+    gasPerGasStation -= valor;
+    pthread_mutex_unlock(&mutexCar);
+    return 0;
 }
 
 void *fillGas(void *argument)
 {
+    return 0;
 }
