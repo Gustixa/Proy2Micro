@@ -138,7 +138,7 @@ int main(){
 void * gasolinera (void * args){
 	int cantidadCarrosMin = 10;
 	int cantidadCarrosMax = 50;
-	
+
 	int cantidadGastosMin = 25;
 	int cantidadGastosMax = 400;
 
@@ -155,23 +155,22 @@ void * gasolinera (void * args){
 
 	pthread_t = threads[];
 	
-*gananciaPorCarro = 0;
-Definir i Como Entero
-	Para i<-0 Hasta cantidad de carros Con paso 1, hacer:
-Si pthread_create(&threads[carro recurrente), NULL, &costoGasolina, gananciaPorCarro) es diferente de cero, hacer:
-	Escribir "Failed to create the thread"
-Fin condicional
-	Fin Para
+	*gananciaPorCarro = 0;
+	for (int i = 0; i < cantidadDeCarros; i++) {
+		if (pthread_create(&threads[carroRecurrente], NULL, &costoGasolina, gananciaPorCarro) != 0) {
+			cout << "Failed to create the thread";
+		}
+	}
 }
 
 /* FUNCION PARA GENERAR LAS GANANCIAS DE CADA CARRO
 * Esta funcion, obtiene la adquisición de gasolina del carro actual con respecto a su gasolinera.
 * Devuelve su cantidad al metodo gasolinera
 */
-Funcion costoGasolina Como puntero Generico (argumento Como puntero Generico)
+void * costoGasolina (void * args){
 	Definir gasolinaAdquirida Como Entero <- *(Entero*)argumento // Quetzales
-Definir gasolinaPorCarro Como aleatorio de tipo Entero
-Definir gasolinaAdquirida Como Entero (Valor aleatorio)
+	Definir gasolinaPorCarro Como aleatorio de tipo Entero
+	Definir gasolinaAdquirida Como Entero (Valor aleatorio)
 	pthread_mutex_lock(&recargarGasolinera) // Esta variable, se crear una asi, diferente, para no confundirse
 	gasolinaPorGasolinera <- gasolinaPorGasolinera - gasolinaPorCarro
 	pthread_mutex_unlock(&recargarGasolinera)
@@ -180,8 +179,7 @@ Definir gasolinaAdquirida Como Entero (Valor aleatorio)
 	
 	*(Entero*)argumento <- gasolinaPorCarro
 	retornar argumento
-	
-Fin Funcion
+}
 
 
 
@@ -190,11 +188,11 @@ Fin Funcion
 * Funcion donde se recarga la gasolinera, en caso de quedarse sin gasolina, simula la llegada de un camion
 * para llegar y recargar la gasolinera
 */
-Funcion cargarGasolinera Como puntero Generico (argumento Como puntero Generico)
+void * cargarGasolinera (void * args){
 	pthread_mutex_lock(&recargarGasolinera)
 	Mientras gasolinaPorGasolinera mayor a 0 hacer:
 		pthread_cond_wait(&recargargandoGasolinera,&recargarGasolinera)
 	Fin mientras
 	gasolinaPorGasolinera <- gasolinaPorGasolinera + cantidadGasolinaRecargar
 	pthread_mutex_unlock(&recargarGasolinera)
-Fin Funcion
+}
