@@ -76,10 +76,15 @@
 // 		pthread_cond_destroy (&cond);
 // }
 
+#include <stdio.h>
+#include <pthread.h>
+#include <iostream>
+#include <vector>
+using namespace std;
 
 Funcion gasolinera Como puntero Generico (argumento Como puntero Generico)
 Funcion costoGasolina Como puntero Generico (argumento Como puntero Generico)
-Funcion carga gasolinera Como puntero Generico (argumento Como puntero Generico)
+Funcion cargarGasolinera Como puntero Generico (argumento Como puntero Generico)
 
 struct estadisticas {
 		int cantidadcarrosEnGasolinera = 0;
@@ -99,33 +104,33 @@ int main(){
 	int gasolinaPorGasolinera = 2000; // En Quetzales
 	
 
-	pthread_mutex_init(&recargarGasolinera)
-	pthread_cond_init(&recargandoGasolinera, NULL)
+	pthread_mutex_init(&recargarGasolinera);
+	pthread_cond_init(&recargandoGasolinera, NULL);
 
-	cout << “Ingrese la cantidad de gasolinas con las cuales desea iniciar para su franquicia”;
+	cout << "Ingrese la cantidad de gasolinas con las cuales desea iniciar para su franquicia";
 	cin >> cantidadDeGasolineras;
 
 	for (i; i < cantidadDeGasolineras; i++){
-		if (pthread_create(&threads[gasolinera recurrente], NULL, NULL ) != 0) {
-			cout << “Failed to create the thread”;
+		if (pthread_create(&threads[gasolineraRecurrente], NULL, NULL ) != 0) {
+			cout << "Failed to create the thread";
 		}
-		if (pthread_create(&camion Recargador[gasolinera recurrente], NULL,&cargar gasolinera ,NULL) != 0), {
-			cout << “Failed to create the thread”;
+		if (pthread_create(&camion Recargador[gasolineraRecurrente], NULL,&cargarGasolinera ,NULL) != 0), {
+			cout << "Failed to create the thread";
 		}
 	}
 
 	for (i; i < cantidadDeGasolineras; i++){
-		Si pthread_join(threads[gasolinera recurrente], (void**)&) hacer:
-			Escribir “Failed to join the current thread”
-		Fin Condicional
-		Si pthread_join(camionRecargador[camion recargador], NULL) es diferente de 0, hacer:
-			Escribir “Failed to join the current thread”
-		Fin Condicional
-	Fin Para
-	pthread_mutex_destroy(&recargarGasolinera)
-	pthread_cond_destroy(&recargarGasolinera)
+		if (pthread_join(threads[gasolinera recurrente], (void**)&) != 0) {
+			cout << "Failed to join the current thread";
+		}
+		if (pthread_join(camionRecargador[camion recargador], NULL) != 0) {
+			cout << "Failed to join the current thread";
+		}
 	}
+	pthread_mutex_destroy(&recargarGasolinera);
+	pthread_cond_destroy(&recargarGasolinera);
 }
+
 
 
 /*FUNCION PARA CREAR SIMULAR LA FUNCIONALIDAD DE LAS GASOLINERAS
@@ -141,7 +146,7 @@ Definir gananciaPorCarro Como Entero <- (Entero*)locación de memoria(tamaño de
 Definir i Como Entero
 	Para i<-0 Hasta cantidad de carros Con paso 1, hacer:
 Si pthread_create(&threads[carro recurrente), NULL, &costoGasolina, gananciaPorCarro) es diferente de cero, hacer:
-	Escribir “Failed to create the thread”
+	Escribir "Failed to create the thread"
 Fin condicional
 	Fin Para
 Fin Funcion 
