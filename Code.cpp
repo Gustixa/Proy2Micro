@@ -80,11 +80,8 @@
 #include <pthread.h>
 #include <iostream>
 #include <vector>
+#include <random>
 using namespace std;
-
-Funcion gasolinera Como puntero Generico (argumento Como puntero Generico)
-Funcion costoGasolina Como puntero Generico (argumento Como puntero Generico)
-Funcion cargarGasolinera Como puntero Generico (argumento Como puntero Generico)
 
 struct estadisticas {
 		int cantidadcarrosEnGasolinera = 0;
@@ -120,10 +117,10 @@ int main(){
 	}
 
 	for (i; i < cantidadDeGasolineras; i++){
-		if (pthread_join(threads[gasolinera recurrente], (void**)&) != 0) {
+		if (pthread_join(threads[gasolineraRecurrente], (void**)&) != 0) {
 			cout << "Failed to join the current thread";
 		}
-		if (pthread_join(camionRecargador[camion recargador], NULL) != 0) {
+		if (pthread_join(camionRecargador[camionRecargador], NULL) != 0) {
 			cout << "Failed to join the current thread";
 		}
 	}
@@ -138,10 +135,26 @@ int main(){
 * Estos vehiculos, seran hilo, y se iran al metodo costoGasolina, donde se genera el precio
 * o cantidad de gasolina adquirida (en quetzales) por cada vehiculo
 */
-Funcion gasolinera Como puntero Generico (argumento Como puntero Generico)
-	Definir cantidad de carros Como valor aleatorio de tipo Entero
-Definir threads[] Como pthread_t
-Definir gananciaPorCarro Como Entero <- (Entero*)locación de memoria(tamaño de(Entero*))
+void * gasolinera (void * args){
+	int cantidadCarrosMin = 10;
+	int cantidadCarrosMax = 50;
+	
+	int cantidadGastosMin = 25;
+	int cantidadGastosMax = 400;
+
+	random_device randCarros;
+	mt19937 generatorCarros(randCarros());
+	uniform_int_distribution<int> cantidadDistr(cantidadCarrosMin, cantidadCarrosMax);
+
+	random_device randGastos;
+	mt19937 generatorGastos(randGastos());
+	uniform_int_distribution<int> gananciaDistr(cantidadGastosMin, cantidadGastosMax);
+
+	int cantidadDeCarros = cantidadDistr(generatorCarros);
+	int gananciaPorCarro = gananciaDistr(generatorGastos);
+
+	pthread_t = threads[];
+	
 *gananciaPorCarro = 0;
 Definir i Como Entero
 	Para i<-0 Hasta cantidad de carros Con paso 1, hacer:
@@ -149,7 +162,7 @@ Si pthread_create(&threads[carro recurrente), NULL, &costoGasolina, gananciaPorC
 	Escribir "Failed to create the thread"
 Fin condicional
 	Fin Para
-Fin Funcion 
+}
 
 /* FUNCION PARA GENERAR LAS GANANCIAS DE CADA CARRO
 * Esta funcion, obtiene la adquisición de gasolina del carro actual con respecto a su gasolinera.
@@ -177,7 +190,7 @@ Fin Funcion
 * Funcion donde se recarga la gasolinera, en caso de quedarse sin gasolina, simula la llegada de un camion
 * para llegar y recargar la gasolinera
 */
-Funcion carga gasolinera Como puntero Generico (argumento Como puntero Generico)
+Funcion cargarGasolinera Como puntero Generico (argumento Como puntero Generico)
 	pthread_mutex_lock(&recargarGasolinera)
 	Mientras gasolinaPorGasolinera mayor a 0 hacer:
 		pthread_cond_wait(&recargargandoGasolinera,&recargarGasolinera)
