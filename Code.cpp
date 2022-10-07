@@ -128,8 +128,6 @@ int main(){
 	pthread_cond_destroy(&recargarGasolinera);
 }
 
-
-
 /*FUNCION PARA CREAR SIMULAR LA FUNCIONALIDAD DE LAS GASOLINERAS
 * Este hilo, es una gasolinera, donde se generaran vehiculos de manera pseudoaleatoria.
 * Estos vehiculos, seran hilo, y se iran al metodo costoGasolina, donde se genera el precio
@@ -168,31 +166,43 @@ void * gasolinera (void * args){
 * Devuelve su cantidad al metodo gasolinera
 */
 void * costoGasolina (void * args){
-	Definir gasolinaAdquirida Como Entero <- *(Entero*)argumento // Quetzales
-	Definir gasolinaPorCarro Como aleatorio de tipo Entero
-	Definir gasolinaAdquirida Como Entero (Valor aleatorio)
-	pthread_mutex_lock(&recargarGasolinera) // Esta variable, se crear una asi, diferente, para no confundirse
-	gasolinaPorGasolinera <- gasolinaPorGasolinera - gasolinaPorCarro
-	pthread_mutex_unlock(&recargarGasolinera)
-	pthread_cond_broadcast(&recargandoGasolinera)
-	cantidadGasolina <- cantidadGasolina - gasolinaAdquirida
+	int cantidadGasPorCarroMin = 10;
+	int cantidadGasPorCarroMax = 50;
+
+	int cantidadGasAdqMin = 25;
+	int cantidadGasAdqMax = 400;
+
+	random_device randGasPorCarro;
+	mt19937 generatorGasolinaPorCarro(randGasPorCarro());
+	uniform_int_distribution<int> cantidadDistr(cantidadGasPorCarroMin, cantidadGasPorCarroMax);
+
+	random_device randGasAdq;
+	mt19937 generatorGasAdq(randGasAdq());
+	uniform_int_distribution<int> gananciaDistr(cantidadGasAdqMin, cantidadGasAdqMax);
+
+	int gasolinaAdquirida = int * args; // Quetzales
+	int gasolinaPorCarro cantidadDistr(generatorGasolinaPorCarro);
+	int gasolinaAdquirida gananciaDistr(generatorGasAdq);
+
+	pthread_mutex_lock(&recargarGasolinera); // Esta variable, se crear una asi, diferente, para no confundirse
+	gasolinaPorGasolinera = gasolinaPorGasolinera - gasolinaPorCarro;
+	pthread_mutex_unlock(&recargarGasolinera);
+	pthread_cond_broadcast(&recargandoGasolinera);
+	cantidadGasolina = cantidadGasolina - gasolinaAdquirida;
 	
-	*(Entero*)argumento <- gasolinaPorCarro
-	retornar argumento
+	int * args = gasolinaPorCarro;
+	return args
 }
-
-
-
 
 /* FUNCION PARA RECARGAR LA GASOLINERA 
 * Funcion donde se recarga la gasolinera, en caso de quedarse sin gasolina, simula la llegada de un camion
 * para llegar y recargar la gasolinera
 */
 void * cargarGasolinera (void * args){
-	pthread_mutex_lock(&recargarGasolinera)
-	Mientras gasolinaPorGasolinera mayor a 0 hacer:
-		pthread_cond_wait(&recargargandoGasolinera,&recargarGasolinera)
-	Fin mientras
-	gasolinaPorGasolinera <- gasolinaPorGasolinera + cantidadGasolinaRecargar
-	pthread_mutex_unlock(&recargarGasolinera)
+	pthread_mutex_lock(&recargarGasolinera);
+	while (gasolinaPorGasolinera > 0){
+		pthread_cond_wait(&recargargandoGasolinera, &recargarGasolinera);
+	}
+	gasolinaPorGasolinera = gasolinaPorGasolinera + cantidadGasolinaRecargar;
+	pthread_mutex_unlock(&recargarGasolinera);
 }
