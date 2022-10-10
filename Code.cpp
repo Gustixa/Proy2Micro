@@ -21,41 +21,41 @@ int gasPerGasStation = 2000; // This value is in quetzales. Could be in global, 
 
 struct GasStation
 {
-	int gasolineraID;
+	int stationID;
 	
-	int cantidadDeCarros = 25;
-	int gananciaPorCarro = 150;
+	int carAmount = 25;
+	int purchaseAmount = 150;
 	
-} data;
+} stationData;
 
 
 void *gasStation(void *argument);
-void *gasPrice(void *argument);
+void *carPurchase(void *argument);
 void *fillGas(void *argument);
 
 
 int main(int argc, char *argv[])
 {
 	cout << "Ingrese la cantidad de gasolineras iniciales: ";
-	int amountGasStation;
-	cin >> amountGasStation;
+	int gasStations;
+	cin >> gasStations;
 	
-	pthread_t numGasStation[amountGasStation];
+	pthread_t numGasStation[gasStations];
 	pthread_mutex_init(&mutexCar, NULL);
 	pthread_cond_init(&condFillingGasStation, NULL);
-	pthread_barrier_init(&barrierGasStations, NULL, amountGasStation);
+	pthread_barrier_init(&barrierGasStations, NULL, gasStations);
 	
 	int i;
 	
-	for (i = 0; i < amountGasStation; i++)
+	for (i = 0; i < gasStations; i++)
 	{
-		if (pthread_create(&numGasStation[i], NULL, &gasStation, NULL) != 0) // modified the forth NULL, if considered to pass a parameter to the method.
+		if (pthread_create(&numGasStation[i], NULL, &gasStation, stationData) != 0) // modified the forth NULL, if considered to pass a parameter to the method.
 		{
 			perror("Failed to create the thread.");
 		}
 	}
 	
-	for (i = 0; i < amountGasStation; i++)
+	for (i = 0; i < gasStations; i++)
 	{
 		if (pthread_join(numGasStation[i], NULL) != 0)
 		{
@@ -72,18 +72,18 @@ void *gasStation(void *argument)
 {
 	cout << "Thread";
 	srand(time(NULL));
-	int amountCars = rand() % 200;
+	int carsArriving = rand() % 200; // RandGenerate Cars(0 - 199) How many cars visit a gas station in a day.
 	
-	pthread_t cars[amountCars];
+	pthread_t cars[carsArriving];
 	int i = 0;
-	for (i = 0; i < amountCars; i++)
+	for (i = 0; i < carsArriving; i++)
 	{
-		if (pthread_create(&cars[i], NULL, &gasPrice, NULL) != 0)
+		if (pthread_create(&cars[i], NULL, &carPurchase, NULL) != 0)
 		{
 			perror("Failed to create the thread");
 		}
 	}
-	for (i = 0; i < amountCars; i++)
+	for (i = 0; i < carsArriving; i++)
 	{
 		if (pthread_join(cars[i], NULL) != 0) // Modified, if consideres to receive a paramter from the method.
 		{
@@ -93,13 +93,14 @@ void *gasStation(void *argument)
 	return 0;
 }
 
-void *gasPrice(void *argument)
+void *carPurchase(void *argument)
 {
 	cout << "Thread";
 	srand(time(NULL));
-	int valor = rand() % 600;
+
+	int purchasedAmount = rand() % 450; // RandGenerate Q(0 - 449) How much a car spends per purchase.
 	pthread_mutex_lock(&mutexCar);
-	gasPerGasStation -= valor;
+	gasPerGasStation -= purchasedAmount;
 	pthread_mutex_unlock(&mutexCar);
 	return 0;
 }
