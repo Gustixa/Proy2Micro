@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < gasStations; i++)
 	{
 		Data.stationID = i;
-		if (pthread_create(&numGasStation[i], NULL, &gasStation, Data) != 0) // modified the forth NULL, if considered to pass a parameter to the method.
+		if (pthread_create(&numGasStation[i], NULL, &gasStation, (void*)&Data) != 0) // modified the forth NULL, if considered to pass a parameter to the method.
 		{
 			perror("Failed to create the thread.");
 		}
@@ -73,19 +73,19 @@ void *gasStation(void *args)
 
 	srand(time(NULL));
 	ThreadResult->carsArriving = rand() % 200; // RandGenerate Cars(0 - 199) How many cars visit a gas station in a day.
-	ThreadResult->ID = arguments->ID;
+	ThreadResult->stationID = arguments->stationID;
 
 	pthread_t cars[ThreadResult->carsArriving];
 	int i = 0;
 	for (i = 0; i < ThreadResult->carsArriving; i++)
 	{
 		ThreadResult->carID = i;
-		if (pthread_create(&cars[i], NULL, &carPurchase, ThreadResult) != 0)
+		if (pthread_create(&cars[i], NULL, &carPurchase, (void*)&ThreadResult) != 0)
 		{
 			perror("Failed to create the thread");
 		}
 	}
-	for (i = 0; i < carsArriving; i++)
+	for (i = 0; i < ThreadResult->carsArriving; i++)
 	{
 		if (pthread_join(cars[i], NULL) != 0) // Modified, if consideres to receive a paramter from the method.
 		{
