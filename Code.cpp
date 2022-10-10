@@ -22,6 +22,7 @@ struct GasStation{
 	int carID;
 	int carSpending;
 	int carsArriving;
+	int gasAmount = 2000;
 } Data;
 
 
@@ -92,23 +93,20 @@ void *gasStation(void *args)
 			perror("\nFailed to join the thread.");
 		}
 	}
-	return 0;
+	return (void*)arguments;
 }
 
 void *carPurchase(void *args)
 {
 	struct GasStation *arguments = (struct GasStation *)args;
-	GasStation LocalData;
 
-	LocalData.carID = arguments->carID;
-	LocalData.stationID = arguments->stationID;
-	LocalData.carSpending = rand() % 450; // RandGenerate Q(0 - 449) How much a car spends per purchase.
+	int carSpending = rand() % 450; // RandGenerate Q(0 - 449) How much a car spends per purchase.
 	srand(time(NULL));
 	
-	cout << "\nA car (" << LocalData.carID << ") has purchased Q" << LocalData.carSpending << " at station No." << LocalData.stationID;
-	gasPerGasStation -= LocalData.carSpending;
-
-	return 0;
+	arguments->gasAmount -= carSpending;
+	cout << "\nA car (" << arguments->carID << ") has purchased Q" << carSpending << " at station No." << arguments->stationID << "\nGas remaining:" << arguments->gasAmount;
+	
+	return (void*)arguments;
 }
 
 void *fillGas(void *argument)
