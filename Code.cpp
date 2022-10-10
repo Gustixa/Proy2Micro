@@ -120,82 +120,82 @@ void *fillGas(void *argument)
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <vector>
-#include <iostream>
-#include <unistd.h>
-#include <numeric>
-using namespace std;
-struct Thread_Parameters
-{
-    int ID;
-    int Calc;
-    int Last_Residue;
-    vector<int> Resultado;
-} Data;
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <vector>
+// #include <iostream>
+// #include <unistd.h>
+// #include <numeric>
+// using namespace std;
+// struct Thread_Parameters
+// {
+//     int ID;
+//     int Calc;
+//     int Last_Residue;
+//     vector<int> Resultado;
+// } Data;
 
-void* Thread_Function(void* args)
-{
-    struct Thread_Parameters *arguments = (struct Thread_Parameters *)args;
-    struct Thread_Parameters *ThreadResult = (Thread_Parameters *)malloc(sizeof(Thread_Parameters));
-    for (int i =0; i < arguments->Calc + arguments->Last_Residue; i++){
-        arguments->ID * arguments->Calc;
-        ThreadResult->Resultado.push_back( ((arguments->ID) * arguments->Calc) + 1 - arguments->Calc + i);
-    }
-    ThreadResult->ID = arguments->ID;
-    return (void*)ThreadResult;
-}
+// void* Thread_Function(void* args)
+// {
+//     struct Thread_Parameters *arguments = (struct Thread_Parameters *)args;
+//     struct Thread_Parameters *ThreadResult = (Thread_Parameters *)malloc(sizeof(Thread_Parameters));
+//     for (int i =0; i < arguments->Calc + arguments->Last_Residue; i++){
+//         arguments->ID * arguments->Calc;
+//         ThreadResult->Resultado.push_back( ((arguments->ID) * arguments->Calc) + 1 - arguments->Calc + i);
+//     }
+//     ThreadResult->ID = arguments->ID;
+//     return (void*)ThreadResult;
+// }
 
-int main(int argc, char *argv[])
-{
-    vector<int> Suma_Total;
-    int P_Threads, Max_Val, Val_N, Max_Threads, Residue;
-    cout << "Número de threads a crear:";
-    cin >> P_Threads;
-    cout << "Valor máximo: ";
-    cin >> Max_Val;
-    if (Max_Val < P_Threads){
-        Val_N = 1;
-        Max_Threads = Max_Val+1;
-        Residue = 0;
-    }else{
-        Val_N = Max_Val / P_Threads;
-        Max_Threads = P_Threads+1;
-        Residue = Max_Val - Val_N * P_Threads;
-    }
-    cout << "Valores N: " << Val_N << "\n";
-    cout << "Residuo: " << Residue << "\n";
+// int main(int argc, char *argv[])
+// {
+//     vector<int> Suma_Total;
+//     int P_Threads, Max_Val, Val_N, Max_Threads, Residue;
+//     cout << "Número de threads a crear:";
+//     cin >> P_Threads;
+//     cout << "Valor máximo: ";
+//     cin >> Max_Val;
+//     if (Max_Val < P_Threads){
+//         Val_N = 1;
+//         Max_Threads = Max_Val+1;
+//         Residue = 0;
+//     }else{
+//         Val_N = Max_Val / P_Threads;
+//         Max_Threads = P_Threads+1;
+//         Residue = Max_Val - Val_N * P_Threads;
+//     }
+//     cout << "Valores N: " << Val_N << "\n";
+//     cout << "Residuo: " << Residue << "\n";
 
-	Thread_Parameters *Result;
-    pthread_t THREADS[P_Threads];
-    for (int i = 1; i < Max_Threads; i++){
-        Data.ID = i;
-        Data.Calc = Val_N;
-        if (Data.ID == P_Threads) {
-            Data.Last_Residue = Residue;
-        }
-        else {
-            Data.Last_Residue = 0;
-        }
-        pthread_create(&THREADS[i], NULL, &Thread_Function, (void *)&Data);
-        pthread_join(THREADS[i], (void **)&Result);
-        printf("______________\n");
-        printf("THREAD: %d\n", Result->ID);
-        printf("_______\n");
-        printf("Limite Inferior: %d\n", Result->Resultado[0]);
-        printf("Limite Superior: %d\n", Result->Resultado.back());
+// 	Thread_Parameters *Result;
+//     pthread_t THREADS[P_Threads];
+//     for (int i = 1; i < Max_Threads; i++){
+//         Data.ID = i;
+//         Data.Calc = Val_N;
+//         if (Data.ID == P_Threads) {
+//             Data.Last_Residue = Residue;
+//         }
+//         else {
+//             Data.Last_Residue = 0;
+//         }
+//         pthread_create(&THREADS[i], NULL, &Thread_Function, (void *)&Data);
+//         pthread_join(THREADS[i], (void **)&Result);
+//         printf("______________\n");
+//         printf("THREAD: %d\n", Result->ID);
+//         printf("_______\n");
+//         printf("Limite Inferior: %d\n", Result->Resultado[0]);
+//         printf("Limite Superior: %d\n", Result->Resultado.back());
         
-        for (int n = 0; n < Result->Resultado.size(); n++){
-            printf("%d\n", Result->Resultado[n]);
-        }
-        printf("Suma: %d\n", accumulate(Result->Resultado.begin(), Result->Resultado.end(), 0));
-        Suma_Total.push_back(accumulate(Result->Resultado.begin(), Result->Resultado.end(), 0));
+//         for (int n = 0; n < Result->Resultado.size(); n++){
+//             printf("%d\n", Result->Resultado[n]);
+//         }
+//         printf("Suma: %d\n", accumulate(Result->Resultado.begin(), Result->Resultado.end(), 0));
+//         Suma_Total.push_back(accumulate(Result->Resultado.begin(), Result->Resultado.end(), 0));
         
-    }
-    printf("SUMA TOTAL: %d\n", accumulate(Suma_Total.begin(), Suma_Total.end(), 0));
-    return 0;
-}
+//     }
+//     printf("SUMA TOTAL: %d\n", accumulate(Suma_Total.begin(), Suma_Total.end(), 0));
+//     return 0;
+// }
