@@ -14,22 +14,18 @@ using namespace std;
 pthread_mutex_t mutexCar;
 pthread_cond_t condFillingGasStation;
 pthread_barrier_t barrierGasStations;
-int amountGasToFill = 10000; // This value, represente the amount of gas, but in quetzales.
-int gasPerGasStation = 2000; // This value is in quetzales. Could be in global, but try to avoid the global variables.
+int myEarnings = 10000; // Starting capital to reinvest
 
 struct GasStation{
 	int stationID;
 	int carID;
 	int carSpending;
 	int carsArriving;
-	int gasAmount = 2000;
+	int gasAmount = 7500;
 } Data;
-
 
 void *gasStation(void *args);
 void *carPurchase(void *args);
-void *fillGas(void *args);
-
 
 int main(int argc, char *argv[])
 {
@@ -46,7 +42,6 @@ int main(int argc, char *argv[])
 	for (i = 0; i < gasStations+1; i++)
 	{
 		Data.stationID = i;
-		//cout << Data.stationID;
 		if (pthread_create(&numGasStation[i], NULL, &gasStation, (void*)&Data) != 0) // modified the forth NULL, if considered to pass a parameter to the method.
 		{
 			perror("\nFailed to create the thread.");
@@ -99,17 +94,25 @@ void *gasStation(void *args)
 void *carPurchase(void *args)
 {
 	struct GasStation *arguments = (struct GasStation *)args;
-
-	int carSpending = rand() % 450; // RandGenerate Q(0 - 449) How much a car spends per purchase.
-	srand(time(NULL));
 	
-	arguments->gasAmount -= carSpending;
-	cout << "\nA car (" << arguments->carID << ") has purchased Q" << carSpending << " at station No." << arguments->stationID << "\nGas remaining:" << arguments->gasAmount;
+	srand(time(NULL));
+	int carSpending = rand() % 450; // RandGenerate Q(0 - 449) How much a car spends per purchase.
+	
+	if (carSpending > arguments->gasAmount){
+		if (myEarnings < 7500){
+			cout << "\n-----------FRANCHISE IS BROKE-------------";
+			return 0;
+		}else{
+			cout << "\nA car (" << arguments->carID << ") has attempted to purchase Q" << carSpending << " at station No." << arguments->stationID << ", but it only had: Q" << arguments->gasAmount << " left in stock, so the purchase was declined and Q7500 were refilled to the station";
+			arguments->gasAmount += 7500;
+			myEarnings -= 7500;
+		}
+		
+	}else{
+		arguments->gasAmount -= carSpending;
+		myEarnings += carSpending;
+		cout << "\nA car (" << arguments->carID << ") has purchased Q" << carSpending << " at station No." << arguments->stationID << "\nGas remaining at station No." << arguments->stationID << ": " << arguments->gasAmount << "\nMy Total Earnings: Q" << myEarnings;
+	}
 	
 	return (void*)arguments;
-}
-
-void *fillGas(void *argument)
-{
-	return 0;
 }
