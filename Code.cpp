@@ -43,7 +43,11 @@ void *fillGas(void *argument);
  */
 int main(int argc, char *argv[])
 {
-    int amountGasStation = 0;
+    int amountGasStation;
+
+    printf("Ingrese la cantidad de gasolineras con las cuales desea iniciar su franquicia! (1-3)");
+    scanf("%d", &amountGasStation);
+
     pthread_t numGasStation[amountGasStation];
     pthread_mutex_init(&mutexCar, NULL);
     pthread_cond_init(&condFillingGasStation, NULL);
@@ -88,7 +92,7 @@ void *gasStation(void *argument)
             perror("Failed to join the thread.");
         }
     }
-    retun 0;
+    return 0;
 }
 
 void *gasPrice(void *argument)
