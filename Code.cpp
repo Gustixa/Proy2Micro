@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	pthread_barrier_init(&barrierGasStations, NULL, gasStations);
 	int i;
 	
-	for (i = 0; i < gasStations; i++)
+	for (i = 0; i < gasStations+1; i++)
 	{
 		Data.stationID = i;
 		//cout << Data.stationID;
