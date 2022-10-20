@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
             perror("Failed to create the currente Thread (Truck thread)\n");
         }
     }
-
+    struct GasStation *result;
     for (i = 0; i < amountGasStation; i++)
     {
         if (pthread_join(GasStation[i], NULL) != 0)
@@ -174,7 +174,7 @@ void *gasPrice(void *argument)
     amountGasPerStation -= price;
     // printf("Remanente de gasolina: %d\n", amountGasPerStation);
     gains += price;
-    printf("Compra atcual: %d\n", amountGasPerStation);
+    // printf("Compra atcual: %d\n", amountGasPerStation);
     // printf("%d\n", gains);
     pthread_mutex_unlock(&mutexCar);
     pthread_cond_broadcast(&condFillingGasStation);
