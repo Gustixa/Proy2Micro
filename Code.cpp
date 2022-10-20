@@ -16,12 +16,14 @@
 #include <time.h>
 #include <vector>
 
+#define AMOUNT_CARS 3
+
 pthread_mutex_t mutexCar;
 pthread_cond_t condFillingGasStation;
 pthread_barrier_t barrierGasStations;
 
 int amountGasToFill = 10000;    // This value, represente the amount of gas, but in quetzales.
-int amountGasPerStation = 4000; // This value is in quetzales. Could be in global, but try to avoid the global variables.
+int amountGasPerStation = 6000; // This value is in quetzales. Could be in global, but try to avoid the global variables.
 int gains = 0;
 struct GasStation
 {
@@ -47,10 +49,10 @@ int main(int argc, char *argv[])
 {
     int amountGasStation = amountGasStationInput();
     pthread_t GasStation[amountGasStation]; // times 2, becasuse, we need the same amount of gas station and tricks to fill it.
-    pthread_t trucks;
+    pthread_t trucks[amountGasStation];
     pthread_mutex_init(&mutexCar, NULL);
     pthread_cond_init(&condFillingGasStation, NULL);
-    pthread_barrier_init(&barrierGasStations, NULL, amountGasStation);
+    pthread_barrier_init(&barrierGasStations, NULL, AMOUNT_CARS);
     int i;
     srand(time(NULL));
     for (i = 0; i < amountGasStation; i++)
@@ -67,9 +69,9 @@ int main(int argc, char *argv[])
         // Creating the trucks to fill the gas station when there is no more gas.
         if (pthread_create(&GasStation[i], NULL, &gasStation, (void **)&data) != 0)
         {
-            perror("Failed to create the thread.\n");
+            perror("Failed to create the Gas Station thread.\n");
         }
-        if (pthread_create(&trucks, NULL, &fillGas, NULL) != 0)
+        if (pthread_create(&trucks[i], NULL, &fillGas, NULL) != 0)
         {
             perror("Failed to create the currente Thread (Truck thread)\n");
         }
@@ -81,7 +83,7 @@ int main(int argc, char *argv[])
         {
             perror("Failed to join the current thread (Gas Station Thread), to the main thread.\n");
         }
-        if (pthread_join(trucks, NULL) != 0)
+        if (pthread_join(trucks[i], NULL) != 0)
         {
             perror("Failed to join the truck thread.\n");
         }
@@ -144,7 +146,7 @@ void *gasStation(void *argument)
         *param = Station->prices[i];
         if (pthread_create(&cars[i], NULL, &gasPrice, param) != 0)
         {
-            perror("Failed to create the thread.\n");
+            perror("Failed to create the car thread.\n");
         }
     }
 
@@ -152,7 +154,7 @@ void *gasStation(void *argument)
     {
         if (pthread_join(cars[i], NULL) != 0) // Modified, if consideres to receive a paramter from the method.
         {
-            perror("Failed to join the thread.\n");
+            perror("Failed to join the car thread.\n");
         }
     }
     return 0;
@@ -167,11 +169,12 @@ void *gasStation(void *argument)
 void *gasPrice(void *argument)
 {
     int price = *(int *)argument;
+    pthread_barrier_wait(&barrierGasStations);
     pthread_mutex_lock(&mutexCar);
     amountGasPerStation -= price;
     // printf("Remanente de gasolina: %d\n", amountGasPerStation);
     gains += price;
-    printf("Compra atcual: %d\n", gains);
+    printf("Compra atcual: %d\n", amountGasPerStation);
     // printf("%d\n", gains);
     pthread_mutex_unlock(&mutexCar);
     pthread_cond_broadcast(&condFillingGasStation);
@@ -187,6 +190,8 @@ void *gasPrice(void *argument)
  */
 void *fillGas(void *argument)
 {
+    // if (gains > 2000)
+    // {
     pthread_mutex_lock(&mutexCar);
     // adding fuel till the amount of gas in the gas station is lower than 500.
     while (amountGasPerStation > 1000)
@@ -196,7 +201,14 @@ void *fillGas(void *argument)
     }
 
     amountGasPerStation += amountGasToFill;
+
     printf("Gasolinera recargada!\n");
     pthread_mutex_unlock(&mutexCar);
+    //    }
+    // else
+    // {
+    //     printf("Not enough money to buy more gas.\n");
+    // }
+
     return 0;
 }
