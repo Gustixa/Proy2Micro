@@ -1,7 +1,7 @@
 /**
  * @file Code.cpp
- * @author Alejandro José Martínez de León  21430   (mar21430@uvg.edu.gt)
  * @author Josúe Samuel Argueta Hernández   211024  (arg211024@uvg.edu.gt)
+ * @author Alejandro José Martínez de León  21430   (mar21430@uvg.edu.gt)
  * @brief
  * @version 0.1
  * @date 2022-10-02
@@ -22,8 +22,6 @@
 
 pthread_mutex_t mutexStation;
 pthread_mutex_t mutexCar;
-pthread_cond_t condTruckFueler;
-pthread_barrier_t barrierStations;
 
 int totalHoldings = 0;
 
@@ -56,8 +54,6 @@ int main(int argc, char *argv[]) {
 	
 	pthread_mutex_init(&mutexStation, NULL);
 	pthread_mutex_init(&mutexCar, NULL);
-    pthread_cond_init(&condTruckFueler, NULL);
-    pthread_barrier_init(&barrierStations, 0, amountGasStation);
 	
 	int i;
 	srand(time(NULL));
@@ -98,8 +94,6 @@ int main(int argc, char *argv[]) {
 	
 	pthread_mutex_destroy(&mutexStation);
 	pthread_mutex_destroy(&mutexCar);
-	pthread_cond_destroy(&condTruckFueler);
-    pthread_barrier_destroy(&barrierStations);
 	return 0;
 }
 
@@ -108,9 +102,9 @@ int amountGasStationInput() {
 	bool next_step = false;
 	do {
 		try {
-			printf("Owned Gas stations (1-10): ");
+			printf("Owned Gas stations (1-4): ");
 			scanf("%d", &amountGasStation);
-			if (amountGasStation < 1 || amountGasStation > 10){
+			if (amountGasStation < 1 || amountGasStation > 4){
 				throw 404;
 			}
 			else {
@@ -197,14 +191,19 @@ void *gasPrice(void *argument) {
 	pthread_mutex_lock(&mutexCar);
 	
 	if (Station->price < Station->holdings) {
+		
+		printf("\nCar purchase of: Q%d at station No.%d || Product before: Q%d", Station->price, Station->ID, Station->holdings);
 		Station->holdings -= int(Station->price*(100-Station->profitMargins)/100);
-		totalHoldings += Station->price;
-		printf("\nCar purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
+		printf(". Now remaining: Q%d\n", Station->holdings);
+
 		if (Station->price - int(Station->price*(100-Station->profitMargins)/100) > 0) {
-	    	printf("Made a profit of: Q%d",(Station->price - int(Station->price*(100-Station->profitMargins)/100)));
+	    	printf("Made a profit of: %dQ",(Station->price - int(Station->price*(100-Station->profitMargins)/100)));
+	    	totalHoldings += Station->price;
 	    	printf(" || Total Holdings: Q%d\n",  totalHoldings);
+	    	
 		}else{
-		    printf("Made a loss of: Q%d",(Station->price - int(Station->price*(100-Station->profitMargins)/100)));
+		    printf("Made a loss of: %dQ",(Station->price - int(Station->price*(100-Station->profitMargins)/100)));
+		    totalHoldings += Station->price + Station->price - int(Station->price*(100-Station->profitMargins)/100);
 		    printf(" || Total Holdings: Q%d\n",  totalHoldings);
 		}
 	}else{
