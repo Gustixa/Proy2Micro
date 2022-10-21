@@ -20,6 +20,7 @@
 
 #define AMOUNT_CARS 3
 
+pthread_mutex_t mutexStation;
 pthread_mutex_t mutexCar;
 pthread_cond_t condTruckFueler;
 pthread_barrier_t barrierStations;
@@ -53,6 +54,7 @@ int main(int argc, char *argv[]) {
 	pthread_t GasStation[amountGasStation];
 	pthread_t trucks[amountGasStation];
 	
+	pthread_mutex_init(&mutexStation, NULL);
 	pthread_mutex_init(&mutexCar, NULL);
     pthread_cond_init(&condTruckFueler, NULL);
     pthread_barrier_init(&barrierStations, 0, amountGasStation + 1);
@@ -90,6 +92,7 @@ int main(int argc, char *argv[]) {
     	}
     }
 	
+	pthread_mutex_destroy(&mutexStation);
 	pthread_mutex_destroy(&mutexCar);
 	pthread_cond_destroy(&condTruckFueler);
     pthread_barrier_destroy(&barrierStations);
@@ -162,6 +165,7 @@ int profitMarginInput() {
 void *gasStation(void *argument) {
 	
 	struct GasStation *Station = (struct GasStation *)argument;
+	pthread_mutex_lock(&mutexStation);
 	pthread_t cars[Station->amountCars];
 	
 	int i = 0;
@@ -177,6 +181,7 @@ void *gasStation(void *argument) {
 		pthread_join(cars[i], (void**)&Result);
 		Station->holdings = Result->holdings;
 	}
+	pthread_mutex_unlock(&mutexStation);
 	return 0;
 }
 
