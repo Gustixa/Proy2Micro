@@ -1,112 +1,155 @@
+/**
+ * @file Code.cpp
+ * @author Josúe Samuel Argueta Hernández   211024  (arg211024@uvg.edu.gt)
+ * @author Alejandro José Martínez de León  21430   (mar21430@uvg.edu.gt)
+ * @brief
+ * @version 0.1
+ * @date 2022-10-02
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstdlib>
 #include <semaphore.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <time.h>
-#include <cmath>
-#include <ctime>
-#include <iostream>
-#include <random>
-using namespace std;
+#include <vector>
 
-pthread_mutex_t mutexCar, mutexGas;
+#define AMOUNT_CARS 3
+
+pthread_mutex_t mutexCar;
 pthread_cond_t condFillingGasStation;
-pthread_barrier_t barrierGasStations;
-int myEarnings = 10000; // Starting capital to reinvest
+
+int amountGasToFill = 10000;    // This value, represente the amount of gas, but in quetzales.
+int amountGasPerStation = 6000; // This value is in quetzales. Could be in global, but try to avoid the global variables.
+int gains = 0;
 
 struct GasStation{
-	int stationID;
-	int carID;
-	int carSpending;
-	int carsArriving;
-	int gasAmount = 7500;
-} Data;
+	int station;
+	int amountCars;
+	int holdings = 6000;
+	std::vector<int> prices;
+} data;
 
-void *gasStation(void *args);
-void *carPurchase(void *args);
+struct Car{
+	int station;
+	int price;
+} Current_car;
 
-int main(int argc, char *argv[])
-{
-	cout << "How many gas stations do you want to generate? : ";
-	int gasStations;
-	cin >> gasStations;
-	pthread_t numGasStation[gasStations];
-	pthread_mutex_init(&mutexGas, NULL);
+void *gasStation(void *argument);
+void *gasPrice(void *argument);
+void *fillGas(void *argument);
+int amountGasStationInput();
+
+int main(int argc, char *argv[]){
+	
+	int amountGasStation = amountGasStationInput();
+	pthread_t GasStation[amountGasStation]; // times 2, becasuse, we need the same amount of gas station and tricks to fill it.
+	pthread_t trucks[amountGasStation];
+	
 	pthread_mutex_init(&mutexCar, NULL);
-	pthread_cond_init(&condFillingGasStation, NULL);
-	pthread_barrier_init(&barrierGasStations, NULL, gasStations);
+	
 	int i;
-	for (i = 0; i < gasStations+1; i++)
-	{
-		Data.stationID = i;
-		if (pthread_create(&numGasStation[i], NULL, &gasStation, (void*)&Data) != 0) // modified the forth NULL, if considered to pass a parameter to the method.
-		{
-			perror("\nFailed to create the thread.");
+
+	for (i = 0; i < amountGasStation; i++){
+		data.station = i;
+		
+		int amountCars = rand() % 20;
+		data.amountCars = amountCars;
+		
+		data.prices.clear();
+		for (int j = 0; j < amountCars; j++){
+			data.prices.push_back(rand() % 400);
+		}
+		
+		if (pthread_create(&GasStation[i], NULL, &gasStation, (void *)&data) != 0){
+			perror("Failed to create the Gas Station thread.\n");
 		}
 	}
-	for (i = 0; i < gasStations; i++)
-	{
-		if (pthread_join(numGasStation[i], NULL) != 0)
-		{
-			perror("\nFailed to join the current thread, to the main thread.");
+	
+	struct GasStation *result;
+	for (i = 0; i < amountGasStation; i++){
+		if (pthread_join(GasStation[i], NULL) != 0){
+			perror("Failed to join the current thread (Gas Station Thread), to the main thread.\n");
 		}
 	}
+
 	pthread_cond_destroy(&condFillingGasStation);
 	pthread_mutex_destroy(&mutexCar);
 	return 0;
 }
 
-void *gasStation(void *args)
-{
-	struct GasStation *arguments = (struct GasStation *)args;
-	GasStation LocalData;
-	srand(time(NULL));
-	LocalData.carsArriving = rand() % 10; // RandGenerate Cars(0 - 9) How many cars visit a gas station in a day.
-	LocalData.stationID = arguments->stationID;
-	pthread_t cars[LocalData.carsArriving];
-	int i = 0;
-
-	for (i = 0; i < LocalData.carsArriving; i++)
-	{
-		LocalData.carID = i;
-		if (pthread_create(&cars[i], NULL, &carPurchase, (void*)&LocalData) != 0)
-		{
-			perror("\nFailed to create the thread");
+int amountGasStationInput(){
+	int amountGasStation = 0;
+	bool next_step = false;
+	do{
+		try{
+			printf("\nIngrese la cantidad de gasolineras con las cuales desea iniciar su franquicia! (1-3): ");
+			scanf("%d", &amountGasStation);
+			if (amountGasStation < 1 || amountGasStation > 3){
+				throw 404;
+			}
+			else{
+				next_step = true;
+			}
 		}
-	}
-	for (i = 0; i < LocalData.carsArriving; i++)
-	{
-		if (pthread_join(cars[i], NULL) != 0)
-		{
-			perror("\nFailed to join the thread.");
+		catch (int x){
+			printf("\nDebe ingresar un valor entre el rango %d", x);
 		}
-	}
-	pthread_mutex_unlock(&mutexGas);
-	return (void*)arguments;
+	} while (!next_step);
+	return amountGasStation;
 }
 
-void *carPurchase(void *args)
-{
-	struct GasStation *arguments = (struct GasStation *)args;
-
-	srand(time(NULL));
-	int carSpending = rand() % 450; // RandGenerate Q(0 - 449) How much a car spends per purchase.
+void *gasStation(void *argument){
 	
-	if (carSpending > arguments->gasAmount){
-		if (myEarnings < 7500){
-			cout << "\n-----------FRANCHISE IS BROKE-------------";
-			return 0;
-		}else{
-			cout << "\nA car (" << arguments->carID+1 << ") has attempted to purchase Q" << carSpending << " at station No." << arguments->stationID << ", but it only had: Q" << arguments->gasAmount << " left in stock, so the purchase was declined and Q7500 were refilled to the station";
-			arguments->gasAmount += 7500;
-			myEarnings -= 7500;
+	struct GasStation *Station = (struct GasStation *)argument;
+	
+	pthread_t cars[Station->amountCars];
+	int i = 0;
+	printf("Cantidad de carros para la gasolinera %d: %d\n", Station->station, Station->amountCars);
+	for (i = 0; i < Station->amountCars; i++)
+	{
+		Current_car.station = Station->station;
+		Current_car.price = Station->prices[i];
+	   
+		if (pthread_create(&cars[i], NULL, &gasPrice, (void*)&Current_car) != 0)
+		{
+			perror("Failed to create the car thread.\n");
 		}
-	}else{
-		arguments->gasAmount -= carSpending;
-		myEarnings += carSpending;
-		cout << "\nA car (" << arguments->carID << ") has purchased Q" << carSpending << " at station No." << arguments->stationID << "\nGas remaining at station No." << arguments->stationID << ": " << arguments->gasAmount << "\nMy Total Earnings: Q" << myEarnings;
 	}
-	return (void*)arguments;
+
+	for (i = 0; i < Station->amountCars; i++)
+	{
+		if (pthread_join(cars[i], NULL) != 0) // Modified, if consideres to receive a paramter from the method.
+		{
+			perror("Failed to join the car thread.\n");
+		}
+	}
+	return 0;
+}
+
+void *gasPrice(void *argument){
+	
+	struct Car *Car_Purchase = (struct Car *)argument;
+	pthread_mutex_lock(&mutexCar);
+	
+	int price = Car_Purchase->price;
+	
+	if (price < amountGasPerStation){
+		amountGasPerStation -= price;
+		printf("Gasoline remaining: %d\n", amountGasPerStation);
+		gains += price;
+		printf("Car purchase of: Q%d at station No.%d\n", price, Car_Purchase->station);
+		printf("Total Holdings: %d\n", gains);
+	}else{
+		amountGasPerStation += 5000;
+		gains -= 5000;
+		printf("Refueled Q5000");
+	}
+	
+	pthread_mutex_unlock(&mutexCar);
+	return 0;
 }
