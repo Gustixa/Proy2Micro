@@ -1,7 +1,7 @@
 /**
  * @file Code.cpp
- * @author Josúe Samuel Argueta Hernández   211024  (arg211024@uvg.edu.gt)
  * @author Alejandro José Martínez de León  21430   (mar21430@uvg.edu.gt)
+ * @author Josúe Samuel Argueta Hernández   211024  (arg211024@uvg.edu.gt)
  * @brief
  * @version 0.1
  * @date 2022-10-02
@@ -63,6 +63,9 @@ int main(int argc, char *argv[]) {
 	srand(time(NULL));
     while(true){
         printf("\n\nMy Account: Q%d", totalHoldings);
+        if (totalHoldings < 0){
+            printf("\n!!!WARNING!!! You are in debt. Increase profit margins to offset losses.");
+        }
         printf("\nStart a new day: ");
         std::string Var = "";
 		profitMargins = profitMarginInput();
