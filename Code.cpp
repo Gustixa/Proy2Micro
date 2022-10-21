@@ -16,6 +16,7 @@
 #include <time.h>
 #include <vector>
 #include <string>
+#include <iostream>
 
 #define AMOUNT_CARS 3
 
@@ -65,10 +66,10 @@ int main(int argc, char *argv[]) {
     	for (i = 1; i < amountGasStation+1; i++) {
     		data.ID = i;
     		
-    		int amountCars = rand() % 100;
+    		int amountCars = rand() % 50; 
     		data.amountCars = amountCars;
     		
-    		data.profitMargins = profitMargins += rand() % 11 + (-5);;
+    		data.profitMargins = profitMargins += rand() % 11 + (-5);
     		
     		data.prices.clear();
     		for (int j = 0; j < amountCars; j++) {
@@ -110,7 +111,7 @@ int amountGasStationInput() {
 			}
 		}
 		catch (int x) {
-			printf("\nInput error, do it again :v  %d", x);
+			printf("Input error%d\n", x);
 		}
 	} while (!next_step);
 	return amountGasStation;
@@ -121,9 +122,9 @@ int initialInvestmentInput() {
 	bool next_step = false;
 	do {
 		try {
-			printf("Initial investment per station in Q: suggested (Q250 - Q5000): ");
+			printf("Initial investment per station (Q100 - Q250000): ");
 			scanf("%d", &initialInvestment);
-			if (initialInvestment < 100 || initialInvestment > 25000){
+			if (initialInvestment < 100 || initialInvestment > 250000){
 				throw 404;
 			}
 			else {
@@ -131,7 +132,7 @@ int initialInvestmentInput() {
 			}
 		}
 		catch (int x) {
-			printf("\nInput error, do it again :v  %d", x);
+			printf("Input error%d\n", x);
 		}
 	} while (!next_step);
 	return initialInvestment;
@@ -142,9 +143,9 @@ int profitMarginInput() {
 	bool next_step = false;
 	do {
 		try {
-			printf("Profit Margins: ");
+			std::cout << "Profit Margins (-100% - 100%): ";
 			scanf("%d", &profitMargin);
-			if (profitMargin < 0 || profitMargin > 100){
+			if (profitMargin < -100 || profitMargin > 100){
 				throw 404;
 			}
 			else {
@@ -152,7 +153,7 @@ int profitMarginInput() {
 			}
 		}
 		catch (int x) {
-			printf("\nInput error, do it again :v  %d", x);
+			printf("Input error%d\n", x);
 		}
 	} while (!next_step);
 	return profitMargin;
@@ -164,7 +165,7 @@ void *gasStation(void *argument) {
 	pthread_t cars[Station->amountCars];
 	
 	int i = 0;
-	printf("Gas station No.%d had %d buyers today, and its margins were of %d%\n", Station->ID, Station->amountCars, Station->profitMargins);
+	std::cout << "Gas station No." << Station->ID << " had " << Station->amountCars << " buyers today, and its margins were of " << Station->profitMargins << "%\n\n";
 	GasStation *Result;
 	for (i = 0; i < Station->amountCars; i++) {
 		Station->price = Station->prices[i];
@@ -190,11 +191,16 @@ void *gasPrice(void *argument) {
 		Station->holdings -= int(Station->price*(100-Station->profitMargins)/100);
 		totalHoldings += Station->price;
 		printf("Car purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
-		printf("Total Holdings: Q%d\n", totalHoldings);
+		if (Station->price - int(Station->price*(100-Station->profitMargins)/100) > 0) {
+	    	printf("Made a profit of: Q%d || Total Holdings: Q%d\n\n",Station->price - int(Station->price*(100-Station->profitMargins)/100),  totalHoldings);
+		}else{
+		    printf("Had  a loss  of: %d Q || Total Holdings: Q%d\n\n",Station->price - int(Station->price*(100-Station->profitMargins)/100),  totalHoldings);
+		}
 	}else{
 		Station->holdings += 5000;
 		totalHoldings -= 5000;
-		printf("Refueled Q5000 at Station No.%d\n",Station->ID);
+		printf("Car attempted a failed purchase of: Q%d at station No.%d || Car was declined and Refueling order was sent", Station->price, Station->ID);
+		printf("Refueled Q5000 at Station No.%d\n\n",Station->ID);
 	}
 	*Result = *Station;
 	
