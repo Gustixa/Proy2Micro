@@ -16,7 +16,7 @@ int totalHoldings = 0;
 struct GasStation{
     int ID;
     int amountCars;
-    int holdings = 1000;
+    int holdings = 5000;
     std::vector<int> prices;
     int price;
 } data;
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
     for (i = 1; i < amountGasStation+1; i++) {
         data.ID = i;
         
-        int amountCars = rand() % 20;
+        int amountCars = rand() % 100;
         data.amountCars = amountCars;
         
         data.prices.clear();
@@ -96,45 +96,39 @@ void *gasStation(void *argument) {
     
     int i = 0;
     printf("Gas station No.%d had %d buyers today.\n", Station->ID, Station->amountCars);
+    GasStation *Result;
     for (i = 0; i < Station->amountCars; i++) {
         Station->price = Station->prices[i];
         struct GasStation *dataCar = (struct GasStation*)malloc(sizeof(struct GasStation));
         *dataCar = *Station;
-        if (pthread_create(&cars[i], NULL, &gasPrice, dataCar) != 0) {
-            perror("Failed to create the car thread.\n");
-        }
+        
+        pthread_create(&cars[i], NULL, &gasPrice, dataCar);
+        
+        pthread_join(cars[i], (void**)&Result);
+        Station->holdings = Result->holdings;
     }
-    struct GasStation *result;
-    for (i = 0; i < Station->amountCars; i++) {
-        if (pthread_join(cars[i], (void**)&result) != 0) {
-            perror("Failed to join the car thread.\n");
-        }
-        free(result);
-    }
-    *Station = *result;
-    
     return 0;
 }
 
 void *gasPrice(void *argument) {
     
     struct GasStation *Station = (struct GasStation *)argument;
+    struct GasStation *Result = (struct GasStation *)malloc(sizeof(struct GasStation));
     
     pthread_mutex_lock(&mutexCar);
     
     if (Station->price < Station->holdings) {
-        Station->holdings -= Station->price;
+        Station->holdings -= int(Station->price*0.85);
         totalHoldings += Station->price;
         printf("Car purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
         printf("Total Holdings: Q%d\n", totalHoldings);
     }else{
         Station->holdings += 5000;
         totalHoldings -= 5000;
-        printf("Refueled Q5000");
+        printf("Refueled Q5000 at Station No.%d\n",Station->ID);
     }
+    *Result = *Station;
     
     pthread_mutex_unlock(&mutexCar);
-    argument = Station;
-    *(struct GasStation*)  argument;
-    return argument;
+    return (void*)Result;
 }
