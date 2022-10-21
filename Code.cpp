@@ -32,6 +32,7 @@ struct GasStation{
 	int holdings = 5000;
 	std::vector<int> prices;
 	int price;
+	int profitMargins;
 } data;
 
 void *gasStation(void *argument);
@@ -61,6 +62,8 @@ int main(int argc, char *argv[]) {
 		
 		int amountCars = rand() % 100;
 		data.amountCars = amountCars;
+		
+		data.profitMargins = rand() % 20;
 		
 		data.prices.clear();
 		for (int j = 0; j < amountCars; j++) {
@@ -136,6 +139,7 @@ void *gasStation(void *argument) {
 	
 	int i = 0;
 	printf("Gas station No.%d had %d buyers today.\n", Station->ID, Station->amountCars);
+	printf("Gas station No.%d's margins were of %d%\n",Station->ID, Station->profitMargins);
 	GasStation *Result;
 	for (i = 0; i < Station->amountCars; i++) {
 		Station->price = Station->prices[i];
@@ -164,7 +168,7 @@ void *gasPrice(void *argument) {
 	pthread_mutex_lock(&mutexCar);
 	
 	if (Station->price < Station->holdings) {
-		Station->holdings -= int(Station->price*0.85);
+		Station->holdings -= int(Station->price * (100 - Station->profitMargins)/100);
 		totalHoldings += Station->price;
 		printf("Car purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
 		printf("Total Holdings: Q%d\n", totalHoldings);
