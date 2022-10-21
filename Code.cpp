@@ -11,9 +11,7 @@
 pthread_mutex_t mutexCar;
 pthread_cond_t condFillingGasStation;
 
-int amountGasToFill = 10000;    // This value, represente the amount of gas, but in quetzales.
-int amountGasPerStation = 6000; // This value is in quetzales. Could be in global, but try to avoid the global variables.
-int gains = 0;
+int totalHoldings = 0;
 
 struct GasStation{
     int ID;
@@ -32,7 +30,7 @@ int amountGasStationInput();
 int main(int argc, char *argv[]){
     
     int amountGasStation = amountGasStationInput();
-    pthread_t GasStation[amountGasStation]; // times 2, becasuse, we need the same amount of gas station and tricks to fill it.
+    pthread_t GasStation[amountGasStation];
     pthread_t trucks[amountGasStation];
     
     pthread_mutex_init(&mutexCar, NULL);
@@ -74,7 +72,7 @@ int amountGasStationInput() {
     bool next_step = false;
     do {
         try {
-            printf("\nIngrese la cantidad de gasolineras con las cuales desea iniciar su franquicia! (1-3): ");
+            printf("Owned Gas stations (1-3): ");
             scanf("%d", &amountGasStation);
             if (amountGasStation < 1 || amountGasStation > 3){
                 throw 404;
@@ -84,7 +82,7 @@ int amountGasStationInput() {
             }
         }
         catch (int x) {
-            printf("\nDebe ingresar un valor entre el rango %d", x);
+            printf("\nInput error, do it again :v  %d", x);
         }
     } while (!next_step);
     return amountGasStation;
@@ -97,7 +95,7 @@ void *gasStation(void *argument) {
     pthread_t cars[Station->amountCars];
     
     int i = 0;
-    printf("Cantidad de carros para la gasolinera %d: %d\n", Station->ID, Station->amountCars);
+    printf("Gas station No.%d had %d buyers today.\n", Station->ID, Station->amountCars);
     for (i = 0; i < Station->amountCars; i++) {
         Station->price = Station->prices[i];
         struct GasStation *dataCar = (struct GasStation*)malloc(sizeof(struct GasStation));
@@ -126,12 +124,12 @@ void *gasPrice(void *argument) {
     
     if (Station->price < Station->holdings) {
         Station->holdings -= Station->price;
-        gains += Station->price;
-        printf("Car purchase of: Q%d at station No.%d || Gasoline remaining:%d\n", Station->price, Station->ID, Station->holdings);
-        printf("Total Holdings: %d\n", gains);
+        totalHoldings += Station->price;
+        printf("Car purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
+        printf("Total Holdings: Q%d\n", totalHoldings);
     }else{
         Station->holdings += 5000;
-        gains -= 5000;
+        totalHoldings -= 5000;
         printf("Refueled Q5000");
     }
     
