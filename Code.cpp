@@ -102,7 +102,7 @@ int amountGasStationInput() {
 	bool next_step = false;
 	do {
 		try {
-			printf("Owned Gas stations (1-4): ");
+			printf("Owned Gas stations (1-4): "); 
 			scanf("%d", &amountGasStation);
 			if (amountGasStation < 1 || amountGasStation > 4){
 				throw 404;
@@ -144,7 +144,7 @@ int profitMarginInput() {
 	bool next_step = false;
 	do {
 		try {
-			std::cout << "Please enter today's profit margins you want to use (-100% - 100%): ";
+			printf("Please enter today's profit margins you want to use (-100%% - 100%%): ");
 			scanf("%d", &profitMargin);
 			if (profitMargin < -100 || profitMargin > 100){
 				throw 404;
@@ -167,7 +167,7 @@ void *gasStation(void *argument) {
 	pthread_t cars[Station->amountCars];
 	
 	int i = 0;
-	std::cout << "\n------------------------Gas station No." << Station->ID << " had " << Station->amountCars << " buyers today, and its margins were of " << Station->profitMargins << "%------------------------\n";
+	printf("\n------------------------Gas station No.%d had %d buyers today, and its margins were of %d%%------------------------\n", Station->ID, Station->amountCars, Station->profitMargins);
 	GasStation *Result;
 	for (i = 0; i < Station->amountCars; i++) {
 		Station->price = Station->prices[i];
