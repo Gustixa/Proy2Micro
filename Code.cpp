@@ -5,9 +5,7 @@
  * @brief
  * @version 0.1
  * @date 2022-10-02
- *
  * @copyright Copyright (c) 2022
- *
  */
 
 #include <stdio.h>
@@ -17,6 +15,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <vector>
+#include <string>
 
 #define AMOUNT_CARS 3
 
@@ -40,11 +39,13 @@ void *gasPrice(void *argument);
 void *fillGas(void *argument);
 int amountGasStationInput();
 int initialInvestmentInput();
+int profitMarginInput();
 
 int main(int argc, char *argv[]) {
 	
 	int amountGasStation = amountGasStationInput();
 	int initialInvestment = initialInvestmentInput();
+	int profitMargins = 0;
 	
 	data.holdings = initialInvestment;
 	
@@ -52,40 +53,45 @@ int main(int argc, char *argv[]) {
 	pthread_t trucks[amountGasStation];
 	
 	pthread_mutex_init(&mutexCar, NULL);
-    pthread_cond_init(&condTruckFueler,NULL);
-    pthread_barrier_init(&barrierStations,0,amountGasStation+1);
+    pthread_cond_init(&condTruckFueler, NULL);
+    pthread_barrier_init(&barrierStations, 0, amountGasStation + 1);
+	
 	int i;
 	srand(time(NULL));
-
-	for (i = 1; i < amountGasStation+1; i++) {
-		data.ID = i;
-		
-		int amountCars = rand() % 100;
-		data.amountCars = amountCars;
-		
-		data.profitMargins = rand() % 20;
-		
-		data.prices.clear();
-		for (int j = 0; j < amountCars; j++) {
-			data.prices.push_back(rand() % 400);
-		}
-		struct GasStation *parameter = (struct GasStation*)malloc(sizeof(struct GasStation));
-		*parameter = data;
-		if (pthread_create(&GasStation[i], NULL, &gasStation,parameter)!=0) {
-			perror("Failed to create the Gas Station thread.\n");
-		}
-	}
-	pthread_barrier_wait(&barrierStations);
-	struct GasStation *result;
-	for (i = 1; i < amountGasStation+1; i++) {
-		if (pthread_join(GasStation[i], (void**)&result) != 0){
-			perror("Failed to join the current thread (Gas Station Thread), to the main thread.\n");
-		}
-	}
+    while(true){
+        printf("Start a new day: ");
+        std::string Var = "";
+		profitMargins = profitMarginInput();
+    	for (i = 1; i < amountGasStation+1; i++) {
+    		data.ID = i;
+    		
+    		int amountCars = rand() % 100;
+    		data.amountCars = amountCars;
+    		
+    		data.profitMargins = profitMargins += rand() % 11 + (-5);;
+    		
+    		data.prices.clear();
+    		for (int j = 0; j < amountCars; j++) {
+    			data.prices.push_back(rand() % 400);
+    		}
+    		struct GasStation *parameter = (struct GasStation*)malloc(sizeof(struct GasStation));
+    		*parameter = data;
+    		if (pthread_create(&GasStation[i], NULL, &gasStation,parameter)!=0) {
+    			perror("Failed to create the Gas Station thread.\n");
+    		}
+    	}
+    	
+    	struct GasStation *result;
+    	for (i = 1; i < amountGasStation+1; i++) {
+    		if (pthread_join(GasStation[i], NULL) != 0){
+    			perror("Failed to join the current thread (Gas Station Thread), to the main thread.\n");
+    		}
+    	}
+    }
 	
 	pthread_mutex_destroy(&mutexCar);
 	pthread_cond_destroy(&condTruckFueler);
-	pthread_barrier_destroy(&barrierStations);
+    pthread_barrier_destroy(&barrierStations);
 	return 0;
 }
 
@@ -104,7 +110,7 @@ int amountGasStationInput() {
 			}
 		}
 		catch (int x) {
-			printf("\nInput error, do it again :v  %d\n", x);
+			printf("\nInput error, do it again :v  %d", x);
 		}
 	} while (!next_step);
 	return amountGasStation;
@@ -131,54 +137,64 @@ int initialInvestmentInput() {
 	return initialInvestment;
 }
 
+int profitMarginInput() {
+	int profitMargin = 0;
+	bool next_step = false;
+	do {
+		try {
+			printf("Profit Margins: ");
+			scanf("%d", &profitMargin);
+			if (profitMargin < 0 || profitMargin > 100){
+				throw 404;
+			}
+			else {
+				next_step = true;
+			}
+		}
+		catch (int x) {
+			printf("\nInput error, do it again :v  %d", x);
+		}
+	} while (!next_step);
+	return profitMargin;
+}
 
 void *gasStation(void *argument) {
-	pthread_barrier_wait(&barrierStations);
+	
 	struct GasStation *Station = (struct GasStation *)argument;
 	pthread_t cars[Station->amountCars];
 	
 	int i = 0;
-	printf("Gas station No.%d had %d buyers today.\n", Station->ID, Station->amountCars);
-	printf("Gas station No.%d's margins were of %d%\n",Station->ID, Station->profitMargins);
+	printf("Gas station No.%d had %d buyers today, and its margins were of %d%\n", Station->ID, Station->amountCars, Station->profitMargins);
 	GasStation *Result;
 	for (i = 0; i < Station->amountCars; i++) {
 		Station->price = Station->prices[i];
 		struct GasStation *dataCar = (struct GasStation*)malloc(sizeof(struct GasStation));
 		*dataCar = *Station;
 		
-		if(pthread_create(&cars[i], NULL, &gasPrice, dataCar) != 0){
-            perror("Failed to create the car thread.\n");
-		}
+		pthread_create(&cars[i], NULL, &gasPrice, dataCar);
+		
+		pthread_join(cars[i], (void**)&Result);
+		Station->holdings = Result->holdings;
 	}
-	
-	for(i = 0; i < Station->amountCars;i++){
-	    if(pthread_join(cars[i], (void**)&Result) != 0){
-	        perror("Failed to join the car thread");
-	    }
-	    Station->holdings = Result->holdings;
-	}
-	
-	return (void*)argument;
+	return 0;
 }
 
 void *gasPrice(void *argument) {
+	
 	struct GasStation *Station = (struct GasStation *)argument;
 	struct GasStation *Result = (struct GasStation *)malloc(sizeof(struct GasStation));
 	
 	pthread_mutex_lock(&mutexCar);
 	
 	if (Station->price < Station->holdings) {
-		Station->holdings -= int(Station->price * (100 - Station->profitMargins)/100);
+		Station->holdings -= int(Station->price*(100-Station->profitMargins)/100);
 		totalHoldings += Station->price;
 		printf("Car purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
 		printf("Total Holdings: Q%d\n", totalHoldings);
 	}else{
-	    
 		Station->holdings += 5000;
 		totalHoldings -= 5000;
-
 		printf("Refueled Q5000 at Station No.%d\n",Station->ID);
-		printf("Total Holdings: Q%d\n", totalHoldings);
 	}
 	*Result = *Station;
 	
