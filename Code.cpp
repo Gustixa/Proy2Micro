@@ -189,12 +189,14 @@ void *gasPrice(void *argument) {
 	
 	if (Station->price < Station->holdings) {
 		Station->holdings -= int(Station->price*(100-Station->profitMargins)/100);
-		totalHoldings += Station->price;
+		totalHoldings += (Station->price - int(Station->price*(100-Station->profitMargins)/100));
 		printf("\nCar purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
 		if (Station->price - int(Station->price*(100-Station->profitMargins)/100) > 0) {
-	    	printf("Made a profit of: Q%d || Total Holdings: Q%d\n",Station->price - int(Station->price*(100-Station->profitMargins)/100),  totalHoldings);
+	    	printf("Made a profit of: Q%d",(Station->price - int(Station->price*(100-Station->profitMargins)/100)));
+	    	printf("|| Total Holdings: Q%d\n",  totalHoldings);
 		}else{
-		    printf("Had  a loss  of: %d Q || Total Holdings: Q%d\n",Station->price - int(Station->price*(100-Station->profitMargins)/100),  totalHoldings);
+		    printf("Made a loss of: Q%d",(Station->price - int(Station->price*(100-Station->profitMargins)/100)));
+		    printf("|| Total Holdings: Q%d\n",  totalHoldings);
 		}
 	}else{
 		Station->holdings += 5000;
