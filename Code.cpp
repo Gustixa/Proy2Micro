@@ -21,6 +21,8 @@
 #define AMOUNT_CARS 3
 
 pthread_mutex_t mutexCar;
+pthread_cond_t condTruckFueler;
+pthread_barrier_t barrierStations;
 
 int totalHoldings = 0;
 
@@ -49,7 +51,8 @@ int main(int argc, char *argv[]) {
 	pthread_t trucks[amountGasStation];
 	
 	pthread_mutex_init(&mutexCar, NULL);
-	
+    pthread_cond_init(&condTruckFueler,NULL);
+    pthread_barrier_init(&barrierStations,0,amountGasStation+1);
 	int i;
 	srand(time(NULL));
 
@@ -69,14 +72,17 @@ int main(int argc, char *argv[]) {
 			perror("Failed to create the Gas Station thread.\n");
 		}
 	}
-	
+	pthread_barrier_wait(&barrierStations);
 	struct GasStation *result;
 	for (i = 1; i < amountGasStation+1; i++) {
-		if (pthread_join(GasStation[i], NULL) != 0){
+		if (pthread_join(GasStation[i], (void**)&result) != 0){
 			perror("Failed to join the current thread (Gas Station Thread), to the main thread.\n");
 		}
 	}
+	
 	pthread_mutex_destroy(&mutexCar);
+	pthread_cond_destroy(&condTruckFueler);
+	pthread_barrier_destroy(&barrierStations);
 	return 0;
 }
 
@@ -95,7 +101,7 @@ int amountGasStationInput() {
 			}
 		}
 		catch (int x) {
-			printf("\nInput error, do it again :v  %d", x);
+			printf("\nInput error, do it again :v  %d\n", x);
 		}
 	} while (!next_step);
 	return amountGasStation;
@@ -124,7 +130,7 @@ int initialInvestmentInput() {
 
 
 void *gasStation(void *argument) {
-	
+	pthread_barrier_wait(&barrierStations);
 	struct GasStation *Station = (struct GasStation *)argument;
 	pthread_t cars[Station->amountCars];
 	
@@ -136,16 +142,22 @@ void *gasStation(void *argument) {
 		struct GasStation *dataCar = (struct GasStation*)malloc(sizeof(struct GasStation));
 		*dataCar = *Station;
 		
-		pthread_create(&cars[i], NULL, &gasPrice, dataCar);
-		
-		pthread_join(cars[i], (void**)&Result);
-		Station->holdings = Result->holdings;
+		if(pthread_create(&cars[i], NULL, &gasPrice, dataCar) != 0){
+            perror("Failed to create the car thread.\n");
+		}
 	}
-	return 0;
+	
+	for(i = 0; i < Station->amountCars;i++){
+	    if(pthread_join(cars[i], (void**)&Result) != 0){
+	        perror("Failed to join the car thread");
+	    }
+	    Station->holdings = Result->holdings;
+	}
+	
+	return (void*)argument;
 }
 
 void *gasPrice(void *argument) {
-	
 	struct GasStation *Station = (struct GasStation *)argument;
 	struct GasStation *Result = (struct GasStation *)malloc(sizeof(struct GasStation));
 	
@@ -157,9 +169,12 @@ void *gasPrice(void *argument) {
 		printf("Car purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
 		printf("Total Holdings: Q%d\n", totalHoldings);
 	}else{
+	    
 		Station->holdings += 5000;
 		totalHoldings -= 5000;
+
 		printf("Refueled Q5000 at Station No.%d\n",Station->ID);
+		printf("Total Holdings: Q%d\n", totalHoldings);
 	}
 	*Result = *Station;
 	
