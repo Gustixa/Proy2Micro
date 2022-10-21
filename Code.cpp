@@ -57,25 +57,26 @@ int main(int argc, char *argv[]) {
 	pthread_mutex_init(&mutexStation, NULL);
 	pthread_mutex_init(&mutexCar, NULL);
     pthread_cond_init(&condTruckFueler, NULL);
-    pthread_barrier_init(&barrierStations, 0, amountGasStation + 1);
+    pthread_barrier_init(&barrierStations, 0, amountGasStation);
 	
 	int i;
 	srand(time(NULL));
     while(true){
-        printf("\n\nStart a new day: ");
+        printf("\n\nMy Account: Q%d", totalHoldings);
+        printf("\nStart a new day: ");
         std::string Var = "";
 		profitMargins = profitMarginInput();
     	for (i = 1; i < amountGasStation+1; i++) {
     		data.ID = i;
     		
-    		int amountCars = rand() % 50; 
+    		int amountCars = (rand() % 90) + 10; 
     		data.amountCars = amountCars;
     		
-    		data.profitMargins = profitMargins += rand() % 11 + (-5);
+    		data.profitMargins = profitMargins += (rand() % 5) - 2;
     		
     		data.prices.clear();
     		for (int j = 0; j < amountCars; j++) {
-    			data.prices.push_back(rand() % 400);
+    			data.prices.push_back((rand() % 375) + 25);
     		}
     		struct GasStation *parameter = (struct GasStation*)malloc(sizeof(struct GasStation));
     		*parameter = data;
@@ -104,9 +105,9 @@ int amountGasStationInput() {
 	bool next_step = false;
 	do {
 		try {
-			printf("Owned Gas stations (1-3): ");
+			printf("Owned Gas stations (1-10): ");
 			scanf("%d", &amountGasStation);
-			if (amountGasStation < 1 || amountGasStation > 3){
+			if (amountGasStation < 1 || amountGasStation > 10){
 				throw 404;
 			}
 			else {
@@ -125,9 +126,9 @@ int initialInvestmentInput() {
 	bool next_step = false;
 	do {
 		try {
-			printf("Initial investment per station (Q100 - Q250000): ");
+			printf("Initial investment per station (Q0 - Q1,000,000): ");
 			scanf("%d", &initialInvestment);
-			if (initialInvestment < 100 || initialInvestment > 250000){
+			if (initialInvestment < 0 || initialInvestment > 1000000){
 				throw 404;
 			}
 			else {
@@ -169,7 +170,7 @@ void *gasStation(void *argument) {
 	pthread_t cars[Station->amountCars];
 	
 	int i = 0;
-	std::cout << "\nGas station No." << Station->ID << " had " << Station->amountCars << " buyers today, and its margins were of " << Station->profitMargins << "%\n";
+	std::cout << "\n------------------------Gas station No." << Station->ID << " had " << Station->amountCars << " buyers today, and its margins were of " << Station->profitMargins << "%------------------------\n";
 	GasStation *Result;
 	for (i = 0; i < Station->amountCars; i++) {
 		Station->price = Station->prices[i];
@@ -198,16 +199,17 @@ void *gasPrice(void *argument) {
 		printf("\nCar purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
 		if (Station->price - int(Station->price*(100-Station->profitMargins)/100) > 0) {
 	    	printf("Made a profit of: Q%d",(Station->price - int(Station->price*(100-Station->profitMargins)/100)));
-	    	printf("|| Total Holdings: Q%d\n",  totalHoldings);
+	    	printf(" || Total Holdings: Q%d\n",  totalHoldings);
 		}else{
 		    printf("Made a loss of: Q%d",(Station->price - int(Station->price*(100-Station->profitMargins)/100)));
-		    printf("|| Total Holdings: Q%d\n",  totalHoldings);
+		    printf(" || Total Holdings: Q%d\n",  totalHoldings);
 		}
 	}else{
 		Station->holdings += 5000;
 		totalHoldings -= 5000;
-		printf("\nCar attempted a failed purchase of: Q%d at station No.%d || Car was declined and Refueling order was sent", Station->price, Station->ID);
-		printf("Refueled Q5000 at Station No.%d\n",Station->ID);
+		printf("\nCar attempted a failed purchase of: Q%d at station No.%d || Car was declined and Refueling order was sent.\n", Station->price, Station->ID);
+		printf("Refueled Q5000 at Station No.%d",Station->ID);
+		printf(" || Total Holdings: Q%d\n",  totalHoldings);
 	}
 	*Result = *Station;
 	
