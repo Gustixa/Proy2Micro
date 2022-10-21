@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         data.station = i + 1;
 
         // Creating the trucks to fill the gas station when there is no more gas.
-        if (pthread_create(&GasStation[i], NULL, &gasStation, (void **)&data) != 0)
+        if (pthread_create(&GasStation[i], NULL, &gasStation, (void *)&data) != 0)
         {
             perror("Failed to create the Gas Station thread.\n");
         }
