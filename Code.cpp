@@ -10,15 +10,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <semaphore.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <time.h>
 #include <vector>
 #include <string>
-#include <iostream>
-
-#define AMOUNT_CARS 3
 
 pthread_mutex_t mutexStation;
 pthread_mutex_t mutexCar;
