@@ -238,7 +238,7 @@ void *gasPrice(void *argument)
 	}
 	else
 	{
-
+		// Recarga automaticamente la gasolinera.
 		Station->holdings += 5000;
 		totalHoldings -= 5000;
 
@@ -246,8 +246,9 @@ void *gasPrice(void *argument)
 		printf("Total Holdings: Q%d\n", totalHoldings);
 	}
 	*Result = *Station;
-	pthread_cond_broadcast(&condTruckFueler);
+
 	pthread_mutex_unlock(&mutexCar);
+	pthread_cond_broadcast(&condTruckFueler);
 	return (void *)Result;
 }
 
@@ -268,7 +269,7 @@ void *fillGas(void *arg)
 		}
 		holdings[i] += 15000;
 	}
-
+	printf("Gasoilinera recargada!.\n");
 	pthread_mutex_unlock(&mutexCar);
 
 	return 0;
