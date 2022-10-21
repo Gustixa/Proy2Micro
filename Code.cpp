@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 	int i;
 	srand(time(NULL));
     while(true){
-        printf("Start a new day: ");
+        printf("\n\nStart a new day: ");
         std::string Var = "";
 		profitMargins = profitMarginInput();
     	for (i = 1; i < amountGasStation+1; i++) {
@@ -143,7 +143,7 @@ int profitMarginInput() {
 	bool next_step = false;
 	do {
 		try {
-			std::cout << "Profit Margins (-100% - 100%): ";
+			std::cout << "Please enter today's profit margins you want to use (-100% - 100%): ";
 			scanf("%d", &profitMargin);
 			if (profitMargin < -100 || profitMargin > 100){
 				throw 404;
@@ -165,7 +165,7 @@ void *gasStation(void *argument) {
 	pthread_t cars[Station->amountCars];
 	
 	int i = 0;
-	std::cout << "Gas station No." << Station->ID << " had " << Station->amountCars << " buyers today, and its margins were of " << Station->profitMargins << "%\n\n";
+	std::cout << "\nGas station No." << Station->ID << " had " << Station->amountCars << " buyers today, and its margins were of " << Station->profitMargins << "%\n";
 	GasStation *Result;
 	for (i = 0; i < Station->amountCars; i++) {
 		Station->price = Station->prices[i];
@@ -190,17 +190,17 @@ void *gasPrice(void *argument) {
 	if (Station->price < Station->holdings) {
 		Station->holdings -= int(Station->price*(100-Station->profitMargins)/100);
 		totalHoldings += Station->price;
-		printf("Car purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
+		printf("\nCar purchase of: Q%d at station No.%d || Product remaining: Q%d\n", Station->price, Station->ID, Station->holdings);
 		if (Station->price - int(Station->price*(100-Station->profitMargins)/100) > 0) {
-	    	printf("Made a profit of: Q%d || Total Holdings: Q%d\n\n",Station->price - int(Station->price*(100-Station->profitMargins)/100),  totalHoldings);
+	    	printf("Made a profit of: Q%d || Total Holdings: Q%d\n",Station->price - int(Station->price*(100-Station->profitMargins)/100),  totalHoldings);
 		}else{
-		    printf("Had  a loss  of: %d Q || Total Holdings: Q%d\n\n",Station->price - int(Station->price*(100-Station->profitMargins)/100),  totalHoldings);
+		    printf("Had  a loss  of: %d Q || Total Holdings: Q%d\n",Station->price - int(Station->price*(100-Station->profitMargins)/100),  totalHoldings);
 		}
 	}else{
 		Station->holdings += 5000;
 		totalHoldings -= 5000;
-		printf("Car attempted a failed purchase of: Q%d at station No.%d || Car was declined and Refueling order was sent", Station->price, Station->ID);
-		printf("Refueled Q5000 at Station No.%d\n\n",Station->ID);
+		printf("\nCar attempted a failed purchase of: Q%d at station No.%d || Car was declined and Refueling order was sent", Station->price, Station->ID);
+		printf("Refueled Q5000 at Station No.%d\n",Station->ID);
 	}
 	*Result = *Station;
 	
