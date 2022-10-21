@@ -5,4 +5,4 @@ Las ganancias por venta de gasolina son del 15%
 
 Alejandro Martínez 21430
 
-Josue Argueta 211024
+Josúe Argueta 211024
